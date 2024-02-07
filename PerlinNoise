@@ -9,7 +9,14 @@ public class MyPerlin : MonoBehaviour
     [SerializeField] float heightScale;//4
 
     [SerializeField] GameObject block;
+    [SerializeField] GameObject stone;
+    [SerializeField] GameObject[] ores;
     [SerializeField] GameObject bedrock;
+
+    [Range(0,1)]
+    [SerializeField] float oreChance;
+    [SerializeField] int stoneBuffer;
+    [SerializeField] int oreBuffer;
 
     [SerializeField] float lowestY;//2
 
@@ -45,7 +52,31 @@ public class MyPerlin : MonoBehaviour
                             pos.y -= 1;
                             if (pos.y != -lowestY)
                             {
-                                Instantiate(block, pos, Quaternion.identity);
+                                int randomBuffer = Random.Range(-1, 2);
+                                if(pos.y < 0 - stoneBuffer + randomBuffer)
+                                {
+                                    randomBuffer = Random.Range(-1, 2);
+                                    if (pos.y < 0 - oreBuffer + randomBuffer)
+                                    {
+                                        if(Random.Range(0f,1f) < oreChance)
+                                        {
+                                            int oreIndex = Random.Range(0, ores.Length);
+                                            Instantiate(ores[oreIndex], pos, Quaternion.identity);
+                                        }
+                                        else
+                                        {
+                                            Instantiate(stone, pos, Quaternion.identity);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Instantiate(stone, pos, Quaternion.identity);
+                                    }
+                                }
+                                else
+                                {
+                                    Instantiate(block, pos, Quaternion.identity);
+                                }
                             }
                             else
                             {
