@@ -4,40 +4,19 @@ using UnityEngine;
 
 public class MyPerlin : MonoBehaviour
 {
-    [SerializeField] int chunkCount;
-    [SerializeField] int chunkSize;
-    [SerializeField] float heightScale;
-    [Range(0,1)]
-    [SerializeField] float randomness;
-    [SerializeField] int seed;
-    [SerializeField] bool randomSeed;
-    [SerializeField] int seedLength;
+    [SerializeField] int chunkCount; //8
+    [SerializeField] int chunkSize; //16
+    [SerializeField] float heightScale;//4
 
     [SerializeField] GameObject block;
     [SerializeField] GameObject bedrock;
 
-    [SerializeField] float lowestY;
+    [SerializeField] float lowestY;//2
 
     // Start is called before the first frame update
     void Start()
     {
         Generate();
-        if (randomSeed)
-        {
-            RandomSeed();
-        }
-    }
-
-    void RandomSeed()
-    {
-        int place = 1;
-        int randomSeed = 0;
-        for(int i = 0; i < seedLength; i++)
-        {
-            randomSeed += place * Random.Range(0, 10);
-            place *= 10;
-        }
-        seed = randomSeed;
     }
 
     void Generate()
@@ -52,12 +31,11 @@ public class MyPerlin : MonoBehaviour
                     {
                         float kdc = k / 16f;
                         float jdc = j / 16f;
-                        float randomY = Random.Range(-randomness, randomness);
-                        float perlinInputX = kdc + seed + h;
-                        float perlinInputY = jdc + seed + i;
+                        float perlinInputX = kdc + h;
+                        float perlinInputY = jdc + i;
                         float perlinNoise = Mathf.PerlinNoise(perlinInputX, perlinInputY);
                         float heightScaled = perlinNoise * heightScale;
-                        float y = Mathf.RoundToInt(heightScaled + randomY);
+                        float y = Mathf.RoundToInt(heightScaled);
                         Vector3 pos = new((i * chunkSize) + k, y, (h * chunkSize) + j);
                         Instantiate(block, pos, Quaternion.identity);
 
@@ -65,7 +43,7 @@ public class MyPerlin : MonoBehaviour
                         for(int l = 0; l < (lowestY + height); l++)
                         {
                             pos.y -= 1;
-                            if (pos.y != 0)
+                            if (pos.y != -lowestY)
                             {
                                 Instantiate(block, pos, Quaternion.identity);
                             }
