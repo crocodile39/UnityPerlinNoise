@@ -6,14 +6,16 @@ public class MyPerlin : MonoBehaviour
 {
     [SerializeField] int chunkCount; //8
     [SerializeField] int chunkSize; //16
+    private float size = 0;
     [SerializeField] float heightScale;//4
 
+    [SerializeField] GameObject chunkParent;
     [SerializeField] GameObject block;
     [SerializeField] GameObject stone;
     [SerializeField] GameObject[] ores;
     [SerializeField] GameObject bedrock;
 
-    [Range(0,1)]
+    [Range(0,.25f)]
     [SerializeField] float oreChance;
     [SerializeField] int stoneBuffer;
     [SerializeField] int oreBuffer;
@@ -23,6 +25,7 @@ public class MyPerlin : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        size = chunkSize;
         Generate();
     }
 
@@ -32,23 +35,29 @@ public class MyPerlin : MonoBehaviour
         {
             for (int i = 0; i < chunkCount; i++)
             {
+                Vector3 chunkSpawn = new(i * chunkCount, 0, h * chunkCount);
+                GameObject currentChunk = Instantiate(chunkParent, chunkSpawn, Quaternion.identity);
+
                 for (int j = 0; j < chunkSize; j++)
                 {
                     for (int k = 0; k < chunkSize; k++)
                     {
-                        float kdc = k / 16f;
-                        float jdc = j / 16f;
+                        
+                        float kdc = k / size;
+                        float jdc = j / size;
                         float perlinInputX = kdc + h;
                         float perlinInputY = jdc + i;
                         float perlinNoise = Mathf.PerlinNoise(perlinInputX, perlinInputY);
                         float heightScaled = perlinNoise * heightScale;
                         float y = Mathf.RoundToInt(heightScaled);
                         Vector3 pos = new((i * chunkSize) + k, y, (h * chunkSize) + j);
-                        Instantiate(block, pos, Quaternion.identity);
+                        GameObject topBlock = Instantiate(block, pos, Quaternion.identity);
+                        topBlock.transform.parent = currentChunk.transform;
 
                         float height = pos.y;
                         for(int l = 0; l < (lowestY + height); l++)
                         {
+                            GameObject bottomBlock;
                             pos.y -= 1;
                             if (pos.y != -lowestY)
                             {
@@ -61,28 +70,28 @@ public class MyPerlin : MonoBehaviour
                                         if(Random.Range(0f,1f) < oreChance)
                                         {
                                             int oreIndex = Random.Range(0, ores.Length);
-                                            Instantiate(ores[oreIndex], pos, Quaternion.identity);
+                                            bottomBlock = Instantiate(ores[oreIndex], pos, Quaternion.identity);
                                         }
                                         else
                                         {
-                                            Instantiate(stone, pos, Quaternion.identity);
+                                            bottomBlock = Instantiate(stone, pos, Quaternion.identity);
                                         }
                                     }
                                     else
                                     {
-                                        Instantiate(stone, pos, Quaternion.identity);
+                                        bottomBlock = Instantiate(stone, pos, Quaternion.identity);
                                     }
                                 }
                                 else
                                 {
-                                    Instantiate(block, pos, Quaternion.identity);
+                                    bottomBlock = Instantiate(block, pos, Quaternion.identity);
                                 }
                             }
                             else
                             {
-                                Instantiate(bedrock, pos, Quaternion.identity);
+                                bottomBlock = Instantiate(bedrock, pos, Quaternion.identity);
                             }
-
+                            bottomBlock.transform.parent = currentChunk.transform;
                         }
                     }
                 }
